@@ -4,12 +4,15 @@ const axios = require("axios")
 const mongoose = require("mongoose")
 let cors = require("cors")
 const UserModel = require("./models/UserModel")
+const NoteModel = require("./models/NoteModel")
 require("dotenv").config()
 const bcrypt = require("bcrypt")
+//const jwt = require("jsonwebtoken")
 
 app.use(express.json())
 app.use(cors({origin: true, credentials: true}))
 
+let loggedInUser = null
 
 app.get("/quote", async (req, res) => {
     let data = []
@@ -45,16 +48,25 @@ app.post("/register", (req, res) => {
 
     hashPassword(password)
 })
+//console.log(process.env.TOKEN)
 
 app.post("/login", async (req, res) => {
     const {username, password} = req.body
-    // 
+
     const user = await UserModel.findOne({username})
+    loggedInUser = user
+    console.log(user)
+    if(!user) {
+        return res.status(200).json("error-noUser")
+    }
     const checkPasswords = await bcrypt.compare(password, user.password)
     if(!checkPasswords) {
-        res.status(200).json("error")
+        return res.status(200).json("error")
     } else {
+        //console.log(user)
+        //const token = jwt.sign(user.name, process.env.TOKEN)*/
         res.status(200).json(user)
+        
     }
 })
 
@@ -62,6 +74,16 @@ app.get("/users", async (req, res) => {
     const users = await UserModel.find({})
     res.status(200).json(users)
 })
+
+app.put("/notes", async (req, res) => {
+    const {newNotes} = req.body
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {notes: newNotes}
+        })
+        res.send(202)
+})
+
 
 
 const start = async () => {

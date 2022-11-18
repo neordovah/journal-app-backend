@@ -12,6 +12,22 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Password must be provided"]
+    },
+    todos: {
+        type: Array,
+        default: []
+    },
+    logs: {
+        type: Object,
+        default: {}
+    },
+    notes: {
+        type: Array,
+        default: []
+    },
+    events: {
+        type: Object,
+        default: {}
     }
 })
 

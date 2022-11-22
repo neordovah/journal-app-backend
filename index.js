@@ -55,7 +55,6 @@ app.post("/login", async (req, res) => {
 
     const user = await UserModel.findOne({username})
     loggedInUser = user
-    console.log(user)
     if(!user) {
         return res.status(200).json("error-noUser")
     }
@@ -84,6 +83,84 @@ app.put("/notes", async (req, res) => {
         res.send(202)
 })
 
+app.put("/todos", async (req, res) => {
+    const {newTodos} = req.body
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {todos: newTodos}
+        })
+        res.send(202)
+})
+
+app.put("/dailyLogs", async (req, res) => {
+    const {dailyLogs} = req.body
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {dailyLogs: dailyLogs}
+        })
+        
+        res.status(202).json(dailyLogs)
+})
+
+app.get("/dailyLogs", async (req, res) => {
+    if(loggedInUser){
+        const user = await UserModel.find({username: loggedInUser.username})
+        res.status(200).json(user)
+    }
+    else {
+        res.send(405)
+    }
+})
+
+app.put("/logs", async (req, res) => {
+    const {dailyLogs} = req.body
+    let user = await UserModel.find({username: loggedInUser.username})
+    
+    user = user[0]
+    //console.log(user.logs, "USER LOGS")
+    
+    if(user.logs == false) {
+        //console.log("empty", user.logs)
+        let newArray = []
+        newArray.push(dailyLogs)
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {logs: newArray}
+        })
+    }
+    else if(user.logs[user.logs.length-1].date !== dailyLogs.date) {
+        console.log("put something here")
+        let newArray = []
+        newArray = [user.logs]
+        newArray.push(dailyLogs)
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {logs: newArray}
+        })
+    }
+    else if(user.logs[user.logs.length-1].date === dailyLogs.date) {
+        let newArray = [user.logs]
+        newArray[newArray.length-1] = dailyLogs
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {logs: newArray}
+        })
+    }
+        res.status(202).json(dailyLogs)
+    
+})
+
+app.get("/logs", async (req, res) => {
+    if(loggedInUser){
+        let user = await UserModel.find({username: loggedInUser.username})
+        user = user[0]
+        console.log(user.logs, "USER GET")
+        res.status(200).json(user.logs)
+    }
+    else {
+        res.send(405)
+    }
+})
 
 
 const start = async () => {

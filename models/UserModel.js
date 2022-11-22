@@ -17,17 +17,21 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
+    dailyLogs: {
+        type: Array,
+        default: []
+    },
     logs: {
-        type: Object,
-        default: {}
+        type: Array,
+        default: [Object]
     },
     notes: {
         type: Array,
         default: []
     },
     events: {
-        type: Object,
-        default: {}
+        type: Array,
+        default: []
     }
 })
 

@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
     events: {
         type: Array,
         default: []
+    },
+    habits: {
+        type: Array,
+        default: []
     }
 })
 

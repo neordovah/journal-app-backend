@@ -4,9 +4,9 @@ const axios = require("axios")
 const mongoose = require("mongoose")
 let cors = require("cors")
 const UserModel = require("./models/UserModel")
-const NoteModel = require("./models/NoteModel")
 require("dotenv").config()
 const bcrypt = require("bcrypt")
+const path = require("path")
 //const jwt = require("jsonwebtoken")
 
 app.use(express.json())
@@ -29,7 +29,6 @@ app.post("/register", (req, res) => {
 
     const hashPassword = async (password) => {
         hashedPassword = await bcrypt.hash(password, 10)
-        console.log(hashedPassword)
         insertUser()
     }
 
@@ -104,7 +103,9 @@ app.put("/dailyLogs", async (req, res) => {
 
 app.get("/dailyLogs", async (req, res) => {
     if(loggedInUser){
-        const user = await UserModel.find({username: loggedInUser.username})
+        let user = await UserModel.find({username: loggedInUser.username})
+        user = user[0]
+        console.log(user)
         res.status(200).json(user)
     }
     else {
@@ -129,24 +130,24 @@ app.put("/logs", async (req, res) => {
         })
     }
     else if(user.logs[user.logs.length-1].date !== dailyLogs.date) {
-        console.log("put something here")
         let newArray = []
-        newArray = [user.logs]
+        newArray = [...user.logs]
         newArray.push(dailyLogs)
+        //console.log("USER LOGS ARRAY",newArray)
         await UserModel.updateOne({username: loggedInUser.username},
             {
             $set: {logs: newArray}
         })
     }
     else if(user.logs[user.logs.length-1].date === dailyLogs.date) {
-        let newArray = [user.logs]
+        let newArray = [...user.logs]
         newArray[newArray.length-1] = dailyLogs
         await UserModel.updateOne({username: loggedInUser.username},
             {
             $set: {logs: newArray}
         })
     }
-        res.status(202).json(dailyLogs)
+    res.send(202)
     
 })
 
@@ -154,7 +155,6 @@ app.get("/logs", async (req, res) => {
     if(loggedInUser){
         let user = await UserModel.find({username: loggedInUser.username})
         user = user[0]
-        console.log(user.logs, "USER GET")
         res.status(200).json(user.logs)
     }
     else {
@@ -162,6 +162,34 @@ app.get("/logs", async (req, res) => {
     }
 })
 
+app.put("/habits", async (req, res) => {
+    const {newHabits} = req.body
+        await UserModel.updateOne({username: loggedInUser.username},
+            {
+            $set: {habits: newHabits}
+        })
+        res.send(202)
+})
+
+app.get("/habits", async (req, res) => {
+    if(loggedInUser){
+        let user = await UserModel.find({username: loggedInUser.username})
+        user = user[0]
+        res.status(200).json(user.habits)
+    }
+    else {
+        res.send(405)
+    }
+})
+
+const port = 3001
+
+if(process.env.NODE_ENV === "production") {
+    app.use(express.static("client/build"))
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
+    })
+}
 
 const start = async () => {
     try {

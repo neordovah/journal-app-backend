@@ -25,7 +25,7 @@ app.get("/quote", async (req, res) => {
 
 app.post("/register", (req, res) => {
     const {name, username, password} = req.body
-    let hashedPassword = null
+    let hashedPassword = null  
 
     const hashPassword = async (password) => {
         hashedPassword = await bcrypt.hash(password, 10)
